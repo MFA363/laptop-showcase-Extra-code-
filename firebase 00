@@ -1,0 +1,82 @@
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+} from "firebase/firestore";
+
+// ─── 1. REAL CREDENTIALS CONTAINER ─────────────────────────────────────────
+export const firebaseConfig = {
+    apiKey: "AIzaSyDs4LgD2E5Ez1Fs9XyMukECRIeQeZNLKGU", // <-- Double check this matches your Firebase Console
+    authDomain: "laptop-showcase-8ac9a.firebaseapp.com",
+    projectId: "laptop-showcase-8ac9a",
+    storageBucket: "laptop-showcase-8ac9a.firebasestorage.app",
+    messagingSenderId: "80327931598",
+    appId: "1:80327931598:web:feeb366ea3cebee1f3c29f",
+    measurementId: "G-MQ7J6N0QR0"
+};
+
+// ─── 2. INITIALIZE CONNECTIVITY ─────────────────────────────────────────────
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ─── 3. LIVE DATA ACTIONS ───────────────────────────────────────────────────
+export async function fetchAllLaptops() {
+  const snapshot = await getDocs(collection(db, "laptops"));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+export async function fetchLaptopById(id: string) {
+  const ref = doc(db, "laptops", id);
+  const snap = await getDoc(ref);
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function addLaptop(laptop: any) {
+  return addDoc(collection(db, "laptops"), laptop);
+}
+
+export async function updateLaptop(id: string, data: any) {
+  return updateDoc(doc(db, "laptops", id), data);
+}
+
+export async function deleteLaptop(id: string) {
+  return deleteDoc(doc(db, "laptops", id));
+}
+
+export async function fetchLaptopsByCategory(category: string) {
+  const q = query(
+    collection(db, "laptops"),
+    where("category", "==", category)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+export async function fetchFeaturedLaptops() {
+  const q = query(
+    collection(db, "laptops"),
+    where("featured", "==", true)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+// ─── 4. AUTOMATED INITIAL DATABASE FILLER ─────────────────────────────────
+// Call this once in your App entry point if your database is empty!
+export async function seedFirestore() {
+  const { LAPTOPS } = await import("./laptops");
+  for (const laptop of LAPTOPS) {
+    const { id, ...data } = laptop;
+    await addDoc(collection(db, "laptops"), data);
+  }
+  console.log("Success! Firestore populated with", LAPTOPS.length, "laptops.");
+}
