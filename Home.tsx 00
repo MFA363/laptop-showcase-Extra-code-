@@ -1,0 +1,325 @@
+import { Link } from "react-router";
+import { ArrowRight, Cpu, Shield, Zap, GitCompare, BookOpen, Star, TrendingUp } from "lucide-react";
+import { motion } from "motion/react";
+import { LAPTOPS, getFeaturedLaptops } from "../data/laptops";
+import { LaptopCard } from "../components/LaptopCard";
+
+const categories = [
+  {
+    id: "gaming",
+    label: "Gaming",
+    icon: "🎮",
+    description: "High-refresh displays, RTX GPUs",
+    color: "from-red-500 to-orange-500",
+  },
+  {
+    id: "ultrabook",
+    label: "Ultrabook",
+    icon: "⚡",
+    description: "Thin, light, all-day battery",
+    color: "from-blue-500 to-cyan-500",
+  },
+  {
+    id: "budget",
+    label: "Budget",
+    icon: "💰",
+    description: "Best value under $700",
+    color: "from-green-500 to-emerald-500",
+  },
+  {
+    id: "2-in-1",
+    label: "2-in-1",
+    icon: "🔄",
+    description: "Laptop + tablet flexibility",
+    color: "from-purple-500 to-pink-500",
+  },
+  {
+    id: "business",
+    label: "Business",
+    icon: "💼",
+    description: "Durability & security built in",
+    color: "from-slate-500 to-gray-600",
+  },
+  {
+    id: "workstation",
+    label: "Workstation",
+    icon: "🖥️",
+    description: "Pro-grade power for CS & design",
+    color: "from-orange-500 to-amber-500",
+  },
+];
+
+const whyChooseFeatures = [
+  {
+    icon: <Cpu className="w-6 h-6 text-blue-500" />,
+    title: "Spec-by-Spec Comparison",
+    desc: "Dive deep into CPU, GPU, RAM, storage, display, and battery specs for every laptop.",
+  },
+  {
+    icon: <GitCompare className="w-6 h-6 text-purple-500" />,
+    title: "Side-by-Side Compare",
+    desc: "Select up to 3 laptops and compare them side-by-side to spot the differences instantly.",
+  },
+  {
+    icon: <BookOpen className="w-6 h-6 text-green-500" />,
+    title: "Student Recommendations",
+    desc: "Each laptop is tagged by use case — Programming, Machine Learning, Design, Gaming, and more.",
+  },
+  {
+    icon: <TrendingUp className="w-6 h-6 text-orange-500" />,
+    title: "Deploy Your Own",
+    desc: "Learn to host this site with Firebase, Vercel, Netlify, or GitHub Pages with our guide.",
+  },
+];
+
+const studentGuide = [
+  {
+    useCase: "Programming / CS",
+    emoji: "💻",
+    tips: ["8GB+ RAM (16GB ideal)", "Fast NVMe SSD", "Good keyboard", "Long battery"],
+    picks: ["macbook-air-m2", "thinkpad-x1-carbon"],
+  },
+  {
+    useCase: "Machine Learning / AI",
+    emoji: "🤖",
+    tips: ["16GB+ RAM", "Discrete GPU (RTX preferred)", "NVMe SSD 1TB+", "Good cooling"],
+    picks: ["asus-rog-zephyrus-g14", "macbook-pro-m3"],
+  },
+  {
+    useCase: "Design / Video Editing",
+    emoji: "🎨",
+    tips: ["Color-accurate display", "Discrete GPU", "16GB+ RAM", "Fast storage"],
+    picks: ["dell-xps-15", "macbook-pro-m3"],
+  },
+  {
+    useCase: "General / Budget",
+    emoji: "📚",
+    tips: ["Under $750", "13–14\" portability", "8–16GB RAM", "Good battery"],
+    picks: ["acer-swift-3", "lenovo-ideapad-flex-5"],
+  },
+];
+
+export function Home() {
+  const featuredLaptops = getFeaturedLaptops().slice(0, 6);
+  const topPicks = LAPTOPS.filter((l) =>
+    ["acer-swift-3", "macbook-air-m2", "asus-rog-zephyrus-g14"].includes(l.id)
+  );
+
+  return (
+    <div>
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-72 h-72 bg-blue-400 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-400 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block bg-blue-500/30 border border-blue-400/40 text-blue-200 text-sm px-4 py-1.5 rounded-full mb-6">
+              🎓 Built for Computer Science Students
+            </span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl text-white mb-6 leading-tight">
+              Find Your Perfect
+              <br />
+              <span className="text-blue-300">Study Laptop</span>
+            </h1>
+            <p className="text-blue-100 text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+              Compare specs, read expert breakdowns, and discover which laptop is right for
+              your major — whether you're coding, designing, gaming, or just studying.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/browse"
+                className="flex items-center gap-2 bg-white text-blue-900 px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors"
+                style={{ fontWeight: 600 }}
+              >
+                Browse All Laptops
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/compare"
+                className="flex items-center gap-2 bg-blue-700/50 border border-blue-500/50 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors"
+                style={{ fontWeight: 500 }}
+              >
+                <GitCompare className="w-4 h-4" />
+                Compare Tool
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-14 grid grid-cols-3 gap-6 max-w-lg mx-auto text-center"
+          >
+            {[
+              { value: "12+", label: "Laptops Reviewed" },
+              { value: "6", label: "Categories" },
+              { value: "Free", label: "Always" },
+            ].map(({ value, label }) => (
+              <div key={label}>
+                <p className="text-3xl text-white" style={{ fontWeight: 700 }}>{value}</p>
+                <p className="text-blue-300 text-sm">{label}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Categories ───────────────────────────────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="text-center mb-10">
+          <h2 className="text-gray-900 mb-2">Browse by Category</h2>
+          <p className="text-gray-500 text-sm">Find the right type for your needs</p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              to={`/browse?category=${cat.id}`}
+              className="group bg-white border border-gray-200 rounded-xl p-4 text-center hover:border-blue-300 hover:shadow-md transition-all"
+            >
+              <div
+                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-2xl mx-auto mb-3 group-hover:scale-110 transition-transform`}
+              >
+                {cat.icon}
+              </div>
+              <p className="text-gray-900 text-sm" style={{ fontWeight: 600 }}>
+                {cat.label}
+              </p>
+              <p className="text-gray-500 text-xs mt-0.5 leading-tight">{cat.description}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Featured Laptops ─────────────────────────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-gray-900">Featured Laptops</h2>
+            <p className="text-gray-500 text-sm mt-0.5">Hand-picked recommendations for CS students</p>
+          </div>
+          <Link
+            to="/browse"
+            className="flex items-center gap-1.5 text-blue-600 text-sm hover:text-blue-800 transition-colors"
+            style={{ fontWeight: 500 }}
+          >
+            View all <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredLaptops.map((laptop) => (
+            <motion.div
+              key={laptop.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+            >
+              <LaptopCard laptop={laptop} />
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Student Guide ────────────────────────────────────────────────── */}
+      <section className="bg-gray-900 py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-white mb-2">What's Right for Your Major?</h2>
+            <p className="text-gray-400 text-sm">Quick spec guides by use case</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {studentGuide.map((guide) => (
+              <div
+                key={guide.useCase}
+                className="bg-gray-800 border border-gray-700 rounded-xl p-5"
+              >
+                <div className="text-3xl mb-3">{guide.emoji}</div>
+                <h3 className="text-white text-base mb-3">{guide.useCase}</h3>
+                <ul className="space-y-1.5 mb-4">
+                  {guide.tips.map((tip) => (
+                    <li key={tip} className="flex items-start gap-2 text-xs text-gray-400">
+                      <span className="text-green-400 mt-0.5 flex-shrink-0">✓</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-gray-500 mb-2">Top picks:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {guide.picks.map((id) => {
+                    const laptop = LAPTOPS.find((l) => l.id === id);
+                    if (!laptop) return null;
+                    return (
+                      <Link
+                        key={id}
+                        to={`/laptop/${id}`}
+                        className="text-xs bg-blue-900/50 border border-blue-700/50 text-blue-300 px-2 py-1 rounded hover:bg-blue-900 transition-colors"
+                      >
+                        {laptop.brand}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why LaptopHub ───────────────────────────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="text-center mb-10">
+          <h2 className="text-gray-900 mb-2">Why Use LaptopHub?</h2>
+          <p className="text-gray-500 text-sm">Everything a student needs to choose confidently</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {whyChooseFeatures.map((feature) => (
+            <div
+              key={feature.title}
+              className="bg-white border border-gray-200 rounded-xl p-6 text-center"
+            >
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                {feature.icon}
+              </div>
+              <h3 className="text-gray-900 text-base mb-2">{feature.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────────────────── */}
+      <section className="bg-blue-600 py-12">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-white mb-3">Ready to Find Your Laptop?</h2>
+          <p className="text-blue-100 mb-6 text-sm">
+            Browse all 12+ laptops with full specs, or use our compare tool to pick the winner.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/browse"
+              className="bg-white text-blue-700 px-6 py-2.5 rounded-lg hover:bg-blue-50 transition-colors text-sm"
+              style={{ fontWeight: 600 }}
+            >
+              Browse Laptops
+            </Link>
+            <Link
+              to="/deployment"
+              className="border border-blue-400 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              Deployment Guide
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
