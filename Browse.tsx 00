@@ -1,0 +1,389 @@
+import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router";
+import { Search, SlidersHorizontal, X, Grid3X3, List, ChevronDown } from "lucide-react";
+import { LAPTOPS, getBrands, Laptop } from "../data/laptops";
+import { LaptopCard } from "../components/LaptopCard";
+
+type SortKey = "price-asc" | "price-desc" | "rating-desc" | "name-asc";
+
+const CATEGORIES = [
+  { value: "", label: "All Categories" },
+  { value: "ultrabook", label: "Ultrabook" },
+  { value: "gaming", label: "Gaming" },
+  { value: "business", label: "Business" },
+  { value: "budget", label: "Budget" },
+  { value: "2-in-1", label: "2-in-1" },
+  { value: "workstation", label: "Workstation" },
+];
+
+const PROCESSOR_BRANDS = ["All", "Intel", "AMD", "Apple"];
+const RAM_OPTIONS = [0, 8, 16, 32];
+const USE_CASES = [
+  "Programming", "Gaming", "Design", "Machine Learning",
+  "Business", "General Use", "Writing", "Studying",
+];
+
+export function Browse() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [layout, setLayout] = useState<"grid" | "list">("grid");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sort, setSort] = useState<SortKey>("rating-desc");
+
+  // Filter state
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [category, setCategory] = useState(searchParams.get("category") ?? "");
+  const [brand, setBrand] = useState("");
+  const [processorBrand, setProcessorBrand] = useState("All");
+  const [minRam, setMinRam] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(3000);
+  const [minBattery, setMinBattery] = useState(0);
+  const [touchscreen, setTouchscreen] = useState(false);
+  const [selectedUseCases, setSelectedUseCases] = useState<string[]>([]);
+
+  const brands = useMemo(() => ["All", ...getBrands()], []);
+
+  // Sync search param from URL on mount
+  useEffect(() => {
+    const s = searchParams.get("search");
+    const c = searchParams.get("category");
+    if (s) setSearch(s);
+    if (c) setCategory(c);
+  }, []);
+
+  const filtered = useMemo<Laptop[]>(() => {
+    let result = [...LAPTOPS];
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (l) =>
+          l.name.toLowerCase().includes(q) ||
+          l.brand.toLowerCase().includes(q) ||
+          l.specs.processor.toLowerCase().includes(q) ||
+          l.description.toLowerCase().includes(q)
+      );
+    }
+
+    if (category) result = result.filter((l) => l.category === category);
+    if (brand && brand !== "All") result = result.filter((l) => l.brand === brand);
+    if (processorBrand !== "All")
+      result = result.filter((l) => l.specs.processorBrand === processorBrand);
+    if (minRam > 0) result = result.filter((l) => l.specs.ram >= minRam);
+    if (maxPrice < 3000) result = result.filter((l) => l.price <= maxPrice);
+    if (minBattery > 0)
+      result = result.filter((l) => l.specs.batteryLife >= minBattery);
+    if (touchscreen) result = result.filter((l) => l.specs.touchscreen);
+    if (selectedUseCases.length > 0)
+      result = result.filter((l) =>
+        selectedUseCases.every((uc) => l.bestFor.includes(uc))
+      );
+
+    switch (sort) {
+      case "price-asc":
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case "rating-desc":
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case "name-asc":
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+    }
+
+    return result;
+  }, [search, category, brand, processorBrand, minRam, maxPrice, minBattery, touchscreen, selectedUseCases, sort]);
+
+  const toggleUseCase = (uc: string) => {
+    setSelectedUseCases((prev) =>
+      prev.includes(uc) ? prev.filter((x) => x !== uc) : [...prev, uc]
+    );
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setCategory("");
+    setBrand("");
+    setProcessorBrand("All");
+    setMinRam(0);
+    setMaxPrice(3000);
+    setMinBattery(0);
+    setTouchscreen(false);
+    setSelectedUseCases([]);
+    setSearchParams({});
+  };
+
+  const hasFilters =
+    search || category || brand || processorBrand !== "All" ||
+    minRam > 0 || maxPrice < 3000 || minBattery > 0 || touchscreen ||
+    selectedUseCases.length > 0;
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-gray-900">Browse Laptops</h1>
+        <p className="text-gray-500 text-sm mt-0.5">
+          {filtered.length} of {LAPTOPS.length} laptops shown
+        </p>
+      </div>
+
+      {/* Search + Controls */}
+      <div className="flex flex-wrap gap-3 mb-6 items-center">
+        {/* Search */}
+        <div className="relative flex-1 min-w-52">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search laptops, brands, specs..."
+            className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Category quick filter */}
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+
+        {/* Sort */}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortKey)}
+          className="border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="rating-desc">Top Rated</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name A–Z</option>
+        </select>
+
+        {/* Advanced Filters Toggle */}
+        <button
+          onClick={() => setFiltersOpen(!filtersOpen)}
+          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-sm transition-colors ${
+            filtersOpen
+              ? "bg-blue-600 text-white border-blue-600"
+              : "border-gray-300 text-gray-600 hover:border-blue-400"
+          }`}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Filters
+          {hasFilters && (
+            <span className="bg-orange-400 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              !
+            </span>
+          )}
+        </button>
+
+        {/* Layout Toggle */}
+        <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setLayout("grid")}
+            className={`p-2.5 ${layout === "grid" ? "bg-blue-600 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setLayout("list")}
+            className={`p-2.5 border-l border-gray-300 ${layout === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+
+        {hasFilters && (
+          <button
+            onClick={clearFilters}
+            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700"
+          >
+            <X className="w-3.5 h-3.5" />
+            Clear all
+          </button>
+        )}
+      </div>
+
+      {/* Advanced Filters Panel */}
+      {filtersOpen && (
+        <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Brand */}
+          <div>
+            <label className="text-sm text-gray-700 block mb-2">Brand</label>
+            <select
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              {brands.map((b) => (
+                <option key={b} value={b === "All" ? "" : b}>{b}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Processor */}
+          <div>
+            <label className="text-sm text-gray-700 block mb-2">Processor</label>
+            <div className="flex gap-2 flex-wrap">
+              {PROCESSOR_BRANDS.map((pb) => (
+                <button
+                  key={pb}
+                  onClick={() => setProcessorBrand(pb)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                    processorBrand === pb
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "border-gray-300 text-gray-600 hover:border-blue-400"
+                  }`}
+                >
+                  {pb}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Min RAM */}
+          <div>
+            <label className="text-sm text-gray-700 block mb-2">
+              Min RAM: {minRam === 0 ? "Any" : `${minRam}GB`}
+            </label>
+            <div className="flex gap-2">
+              {RAM_OPTIONS.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setMinRam(r)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                    minRam === r
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "border-gray-300 text-gray-600 hover:border-blue-400"
+                  }`}
+                >
+                  {r === 0 ? "Any" : `${r}GB`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Max Price */}
+          <div>
+            <label className="text-sm text-gray-700 block mb-2">
+              Max Price: {maxPrice >= 3000 ? "Any" : `$${maxPrice}`}
+            </label>
+            <input
+              type="range"
+              min={500}
+              max={3000}
+              step={50}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="w-full accent-blue-600"
+            />
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>$500</span><span>$3000+</span>
+            </div>
+          </div>
+
+          {/* Min Battery */}
+          <div>
+            <label className="text-sm text-gray-700 block mb-2">
+              Min Battery: {minBattery === 0 ? "Any" : `${minBattery}h`}
+            </label>
+            <div className="flex gap-2">
+              {[0, 8, 12, 15].map((h) => (
+                <button
+                  key={h}
+                  onClick={() => setMinBattery(h)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                    minBattery === h
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "border-gray-300 text-gray-600 hover:border-blue-400"
+                  }`}
+                >
+                  {h === 0 ? "Any" : `${h}h+`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Touchscreen */}
+          <div>
+            <label className="text-sm text-gray-700 block mb-2">Features</label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={touchscreen}
+                onChange={(e) => setTouchscreen(e.target.checked)}
+                className="rounded accent-blue-600 w-4 h-4"
+              />
+              <span className="text-sm text-gray-600">Touchscreen only</span>
+            </label>
+          </div>
+
+          {/* Use Cases */}
+          <div className="sm:col-span-2">
+            <label className="text-sm text-gray-700 block mb-2">Best For</label>
+            <div className="flex flex-wrap gap-2">
+              {USE_CASES.map((uc) => (
+                <button
+                  key={uc}
+                  onClick={() => toggleUseCase(uc)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    selectedUseCases.includes(uc)
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "border-gray-300 text-gray-600 hover:border-blue-400"
+                  }`}
+                >
+                  {uc}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-4xl mb-4">🔍</p>
+          <h3 className="text-gray-700 mb-2">No laptops found</h3>
+          <p className="text-gray-500 text-sm mb-4">
+            Try adjusting your filters or search query
+          </p>
+          <button
+            onClick={clearFilters}
+            className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Clear Filters
+          </button>
+        </div>
+      ) : layout === "grid" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {filtered.map((laptop) => (
+            <LaptopCard key={laptop.id} laptop={laptop} layout="grid" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((laptop) => (
+            <LaptopCard key={laptop.id} laptop={laptop} layout="list" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
